@@ -1,0 +1,102 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id       String @id @default(uuid())
+  name     String
+  email    String @unique
+  password String
+  quizzes  Quiz[]
+  createdAt DateTime      @default(now())
+}
+
+model Quiz {
+  id        String        @id @default(uuid())
+  title     String
+  userId    String
+  user      User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  questions Question[]
+  sessions  GameSession[]
+  createdAt DateTime      @default(now())
+  updatedAt DateTime      @updatedAt
+}
+
+model Question {
+  id           String   @id @default(uuid())
+  text         String
+  timeLimitSec Int      @default(20)
+  points       Int      @default(5)
+  order        Int
+  quizId       String
+  quiz         Quiz     @relation(fields: [quizId], references: [id], onDelete: Cascade)
+  options      Option[]
+  answers      Answer[]
+
+  @@unique([quizId, order])
+}
+
+model Option {
+  id         String   @id @default(uuid())
+  text       String
+  isCorrect  Boolean  @default(false)
+  order      Int
+  questionId String
+  question   Question @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  answers    Answer[]
+
+  @@unique([questionId, order])
+}
+
+model GameSession {
+  id                String        @id @default(uuid())
+  code              Int           @unique
+  status            SessionStatus @default(LOBBY)
+  currentQuestion   Int           @default(0)
+  questionStartedAt DateTime?
+  createdAt         DateTime      @default(now())
+  quizId            String
+  quiz              Quiz          @relation(fields: [quizId], references: [id], onDelete: Cascade)
+  players           Player[]
+}
+
+model Player {
+  id        String      @id @default(uuid())
+  name      String
+  score     Int         @default(0)
+  sessionId String
+  session   GameSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  answers   Answer[]
+
+  @@unique([sessionId, name])
+}
+
+model Answer {
+  id         String   @id @default(uuid())
+  createdAt  DateTime @default(now())
+  playerId   String
+  player     Player   @relation(fields: [playerId], references: [id], onDelete: Cascade)
+  questionId String
+  question   Question @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  optionId   String
+  option     Option   @relation(fields: [optionId], references: [id], onDelete: Cascade)
+
+  @@unique([playerId, questionId])
+}
+
+enum SessionStatus {
+  LOBBY
+  RUNNING
+  FINISHED
+}
