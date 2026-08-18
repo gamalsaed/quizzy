@@ -80,17 +80,12 @@ export default function GameRunning({ code }: { code: string }) {
   }, [gameSession?.currentQuestion.id]);
 
   useEffect(() => {
-    if (gameSession?.timer.isTimeUp) {
-      nextQuestion();
-    }
-  }, [gameSession]);
-
-  useEffect(() => {
     if (gameSession?.timer.isTimeUp && !hasTriggeredNextRef.current) {
       hasTriggeredNextRef.current = true;
       nextQuestion();
     }
   }, [gameSession?.isQuizEnded]);
+  
 
   if (gameSession) {
     return (
