@@ -13,7 +13,6 @@ export default async function page() {
       questions: true,
     },
   });
-
   return (
     <div className="p-0 m-0">
       <div className=" h-dvh  p-4  rounded-3xl max-h-dvh overflow-hidden  relative z-10">
@@ -25,16 +24,18 @@ export default async function page() {
           dir="ltr"
         >
           <CreateQuizCard />
-          {quizes.map((quiz) => (
-            <QuizCard
-              key={quiz.id}
-              id={quiz.id}
-              title={quiz.title}
-              questionsCount={quiz.questions.length}
-              createdAt={quiz.createdAt}
-              updatedAt={quiz.updatedAt}
-            />
-          ))}
+          {session &&
+            quizes.map((quiz) => (
+              <QuizCard
+                key={quiz.id}
+                id={quiz.id}
+                hostId={session?.user.id}
+                title={quiz.title}
+                questionsCount={quiz.questions.length}
+                createdAt={quiz.createdAt}
+                updatedAt={quiz.updatedAt}
+              />
+            ))}
         </div>
       </div>
     </div>

@@ -7,10 +7,15 @@ import { LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useMutation } from "@tanstack/react-query";
 import { ChangeGameStatusAction } from "@/lib/actions/change-game-status";
+import { useRouter } from "next/navigation";
 
 export function LobbyHeader({ code }: { code: string }) {
-  const { mutate, isPending } = useMutation({
+  const router = useRouter();
+  const { mutate } = useMutation({
     mutationFn: () => ChangeGameStatusAction(code, "FINISHED"),
+    onSuccess: () => {
+      router.push("/");
+    },
   });
 
   return (

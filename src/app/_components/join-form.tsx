@@ -6,7 +6,8 @@ import { useJoin } from "@/lib/Hooks/use-join";
 import { useForm, Controller } from "react-hook-form";
 import { ArrowLeft, AlertCircle } from "lucide-react";
 import { useSearchParams } from "next/navigation";
-
+import { useSession } from "next-auth/react";
+import { getClientToken } from "@/lib/get-client-token";
 import {
   InputOTP,
   InputOTPGroup,
@@ -20,20 +21,23 @@ export function JoinForm() {
   const { mutate, isPending, error } = useJoin();
   const searchParams = useSearchParams();
   const searchCode = searchParams.get("code");
-
+  const userSession = useSession();
   const { control, handleSubmit, formState } = useForm<JoinType>({
     resolver: zodResolver(joinSchema),
-    defaultValues: { code: searchCode || "" },
+    defaultValues: { code: searchCode || "", clientToken: getClientToken() },
   });
 
   const hasError = !!formState.errors.code || !!error;
 
   const submithandler = (data: JoinType) => {
-    mutate({ code: data.code });
+    const clientToken = getClientToken();
+
+    mutate({ code: data.code, clientToken });
   };
 
   useEffect(() => {
-    if (searchCode) mutate({ code: searchCode });
+    const clientToken = getClientToken();
+    if (searchCode && !userSession) mutate({ code: searchCode, clientToken });
   }, [searchCode]);
 
   return (

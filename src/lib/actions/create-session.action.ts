@@ -7,7 +7,7 @@ function generateGameCode() {
   return Math.floor(1000 + Math.random() * 9000);
 }
 
-export async function createGameSessionAction(quizId: string) {
+export async function createGameSessionAction(quizId: string, hostId: string) {
   let code = generateGameCode();
 
   let existingSession = await prisma.gameSession.findUnique({
@@ -26,6 +26,7 @@ export async function createGameSessionAction(quizId: string) {
     data: {
       quizId,
       code,
+      hostId,
     },
   });
 

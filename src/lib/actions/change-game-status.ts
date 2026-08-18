@@ -11,6 +11,7 @@ export async function ChangeGameStatusAction(
       where: { code: Number(code) },
       data: {
         status: status,
+        questionStartedAt: new Date(),
       },
     });
     return updatedSession;

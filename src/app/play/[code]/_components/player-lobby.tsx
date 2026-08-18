@@ -3,6 +3,7 @@ import { QRCodeSVG } from "qrcode.react";
 import { Timer, Users } from "lucide-react";
 
 import { useEffect, useState } from "react";
+import { useSession } from "next-auth/react";
 
 export interface PlayerLobbyProps {
   code: string;
@@ -14,25 +15,37 @@ type Player = {
   name: string;
 };
 
+type IncomingDataType = {
+  players: Player[];
+  hoster: string;
+  status: string;
+};
+
 export default function PlayerLobby({ code, hostName }: PlayerLobbyProps) {
   const [resolvedUrl, setResolvedUrl] = useState("");
-  const [players, setPlayers] = useState<Player[]>([]);
+  const session = useSession();
+  const [incomingData, setIncomingData] = useState<IncomingDataType>({
+    players: [],
+    hoster: "",
+    status: "",
+  });
 
   useEffect(() => {
     setResolvedUrl(`${window.location.origin}?code=${code}`);
   }, [code]);
-
   useEffect(() => {
     const eventSource = new EventSource(`/api/game/${code}/events/lobby`);
     eventSource.onmessage = (event) => {
       const data = JSON.parse(event.data);
 
-      setPlayers(data.players);
+      setIncomingData({
+        players: data.players,
+        hoster: data.hoster,
+        status: data.status,
+      });
     };
-
     return () => eventSource.close();
   }, [code]);
-
   return (
     <div
       dir="rtl"
@@ -59,8 +72,8 @@ export default function PlayerLobby({ code, hostName }: PlayerLobbyProps) {
               أنت في غرفة اللعبة
             </h1>
             <p className="text-sm text-muted-foreground">
-              {hostName
-                ? `بانتظار بدء اللعبة بواسطة ${hostName}`
+              {incomingData.hoster
+                ? `بانتظار بدء اللعبة بواسطة ${incomingData.hoster}`
                 : "بانتظار بدء اللعبة بواسطة المضيف"}
             </p>
           </div>
@@ -122,7 +135,7 @@ export default function PlayerLobby({ code, hostName }: PlayerLobbyProps) {
             dir="ltr"
             className="rounded-full bg-main/10 px-6 py-2 text-lg font-extrabold text-main"
           >
-            {players.length}
+            {incomingData.players.length}
           </span>
 
           <p className="animate-pulse text-sm text-muted-foreground">

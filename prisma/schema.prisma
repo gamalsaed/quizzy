@@ -14,12 +14,13 @@ datasource db {
 }
 
 model User {
-  id       String @id @default(uuid())
-  name     String
-  email    String @unique
-  password String
-  quizzes  Quiz[]
-  createdAt DateTime      @default(now())
+  id           String        @id @default(uuid())
+  name         String
+  email        String        @unique
+  password     String
+  quizzes      Quiz[]
+  createdAt    DateTime      @default(now())
+  gameSessions GameSession[]
 }
 
 model Quiz {
@@ -69,30 +70,36 @@ model GameSession {
   quizId            String
   quiz              Quiz          @relation(fields: [quizId], references: [id], onDelete: Cascade)
   players           Player[]
+  answers           Answer[]
+  hostId            String
+  host              User          @relation(fields: [hostId], references: [id], onDelete: Cascade)
 }
 
 model Player {
-  id        String      @id @default(uuid())
-  name      String
-  score     Int         @default(0)
-  sessionId String
-  session   GameSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
-  answers   Answer[]
+  id          String      @id @default(uuid())
+  name        String
+  score       Int         @default(0)
+  sessionId   String
+  session     GameSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  answers     Answer[]
+  clientToken String
 
-  @@unique([sessionId, name])
+  @@unique([sessionId, clientToken])
 }
 
 model Answer {
-  id         String   @id @default(uuid())
-  createdAt  DateTime @default(now())
+  id         String      @id @default(uuid())
+  createdAt  DateTime    @default(now())
   playerId   String
-  player     Player   @relation(fields: [playerId], references: [id], onDelete: Cascade)
+  player     Player      @relation(fields: [playerId], references: [id], onDelete: Cascade)
   questionId String
-  question   Question @relation(fields: [questionId], references: [id], onDelete: Cascade)
-  optionId   String
-  option     Option   @relation(fields: [optionId], references: [id], onDelete: Cascade)
+  question   Question    @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  optionId   String?
+  option     Option?     @relation(fields: [optionId], references: [id], onDelete: Cascade)
+  sessionId  String
+  session    GameSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
 
-  @@unique([playerId, questionId])
+  @@unique([playerId, questionId, sessionId])
 }
 
 enum SessionStatus {

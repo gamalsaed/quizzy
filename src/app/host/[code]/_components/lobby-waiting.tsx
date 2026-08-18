@@ -6,13 +6,14 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useMutation } from "@tanstack/react-query";
 import { ChangeGameStatusAction } from "@/lib/actions/change-game-status";
+import { useRouter } from "next/navigation";
 
 export interface WaitingCardProps {
   code: string;
   canStart?: boolean;
   className?: string;
 }
-
+// Chat Gpt
 function PlayersIllustration() {
   return (
     <svg
@@ -23,25 +24,21 @@ function PlayersIllustration() {
     >
       <circle cx="100" cy="95" r="62" className="fill-muted" />
 
-      {/* اللاعب الأيسر */}
       <g className="fill-violet-600">
         <circle cx="55" cy="68" r="17" />
         <path d="M32 132v-14a23 23 0 0 1 46 0v14z" />
       </g>
 
-      {/* اللاعب الأيمن */}
       <g className="fill-teal-500">
         <circle cx="145" cy="68" r="17" />
         <path d="M122 132v-14a23 23 0 0 1 46 0v14z" />
       </g>
 
-      {/* اللاعب في النص */}
       <g className="fill-rose-500">
         <circle cx="100" cy="60" r="21" />
         <path d="M70 140v-19a30 30 0 0 1 60 0v19z" />
       </g>
 
-      {/* عناصر زخرفية */}
       <path
         d="M28 62q4 11 15 15-11 4-15 15-4-11-15-15 11-4 15-15z"
         className="fill-amber-400"
@@ -69,8 +66,12 @@ export function WaitingCard({
   canStart = true,
   className,
 }: WaitingCardProps) {
+  const router = useRouter();
   const { mutate, isPending } = useMutation({
     mutationFn: () => ChangeGameStatusAction(code, "RUNNING"),
+    onSuccess: () => {
+      router.push(`/host/${code}/running`);
+    },
   });
 
   return (

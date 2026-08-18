@@ -13,7 +13,6 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
-import { useRouter } from "next/navigation";
 
 export interface QuizCardProps {
   id: string;
@@ -24,6 +23,7 @@ export interface QuizCardProps {
   onEdit?: (id: string) => void;
   onDelete?: (id: string) => void;
   className?: string;
+  hostId: string;
 }
 
 const dateFormatter = new Intl.DateTimeFormat("ar-EG-u-nu-latn", {
@@ -45,12 +45,13 @@ export function QuizCard({
   onEdit,
   onDelete,
   className,
+  hostId,
 }: QuizCardProps) {
   const isEdited = Boolean(updatedAt);
   const displayDate = formatDate(updatedAt ?? createdAt);
 
-  const { mutate, isPending } = useMutation({
-    mutationFn: (quizId: string) => createGameSessionAction(quizId),
+  const { mutate, isPending, data } = useMutation({
+    mutationFn: () => createGameSessionAction(id, hostId),
   });
 
   return (
@@ -107,20 +108,17 @@ export function QuizCard({
           </span>
         </div>
       </div>
-
       <Button
         size="lg"
-        nativeButton={false}
         className="w-full gap-2 rounded-xl text-base"
-        onClick={() => mutate(id)}
+        onClick={() => mutate()}
         disabled={isPending}
-        render={
-          <Link href={`/quiz/${id}/host`}>
-            شغّل
-            <Play className="size-4 fill-current" />
-          </Link>
-        }
-      />
+      >
+        <span className="flex items-center gap-2">
+          شغّل
+          <Play className="size-4 fill-current" />
+        </span>
+      </Button>
     </article>
   );
 }

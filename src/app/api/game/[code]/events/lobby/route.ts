@@ -10,26 +10,46 @@ export async function GET(
 
   const stream = new ReadableStream({
     async start(controller) {
+      let oldState = "";
       const sendPlayers = async () => {
         const session = await prisma.gameSession.findUnique({
           where: {
             code: Number(code),
           },
           select: {
+            status: true,
             players: {
               select: {
                 id: true,
                 name: true,
               },
             },
+            quiz: {
+              select: {
+                user: {
+                  select: {
+                    name: true,
+                  },
+                },
+              },
+            },
           },
         });
 
+        let newState = JSON.stringify(session);
+
         const data = {
           players: session?.players ?? [],
+          hoster: session?.quiz.user.name ?? null,
+          status: session?.status ?? null,
         };
 
-        controller.enqueue(encoder.encode(`data: ${JSON.stringify(data)}\n\n`));
+        if (newState !== oldState) {
+          oldState = newState;
+          controller.enqueue(
+            encoder.encode(`data: ${JSON.stringify(data)}\n\n`),
+          );
+        }
       };
 
       await sendPlayers();

@@ -1,19 +1,13 @@
-import PlayerSteps from "./_components/player-steps";
+import Result from "@/app/_components/result";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/auth";
 import Loading from "@/app/loading";
-export default async function page({
-  params,
-}: {
-  params: Promise<{ code: string }>;
-}) {
+export default async function page() {
   const session = await getServerSession(authOptions);
-  const { code } = await params;
   if (!session) return <Loading />;
-  
   return (
     <div>
-      <PlayerSteps code={code} userId={session?.user.id} />
+      <Result userId={session.user.id!} />
     </div>
   );
 }

@@ -2,9 +2,14 @@ import Image from "next/image";
 import { JoinForm } from "./_components/join-form";
 import Link from "next/link";
 import { UserPlus, ChevronRight } from "lucide-react";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/auth";
+import { getPlayerSessionAction } from "@/lib/actions/get-player-session";
+import { redirect } from "next/navigation";
 
-export default function Home() {
-  return (
+export default async function Home() {
+  const userSession = await getServerSession(authOptions);
+  const startPage = (
     <div className="min-h-screen flex items-center max-sm:p-5 flex-col justify-center bg-[url('/images/bg.png')] bg-cover bg-center bg-no-repeat">
       <header className="flex flex-col justify-center items-center">
         <Image
@@ -20,6 +25,7 @@ export default function Home() {
           اكتب كود اللعبة المكون من 4 ارقام للانضمام بسرعة
         </h3>
       </header>
+
       <JoinForm />
       <Link
         href="/auth/login"
@@ -39,4 +45,16 @@ export default function Home() {
       </Link>
     </div>
   );
+
+  if (!userSession) {
+    return startPage;
+  }
+
+  const session = await getPlayerSessionAction(userSession?.user?.id);
+
+  if (session && "code" in session) {
+    redirect(`/play/${session.code}`);
+  }
+
+  return startPage;
 }
