@@ -1,4 +1,3 @@
-import React from "react";
 import GameRunning from "./_components/game-running";
 export default async function page({
   params,

@@ -43,7 +43,7 @@ type data = {
 
 export default function GameRunning({ code }: { code: string }) {
   const [gameSession, setGameSession] = useState<data>();
-  const hasTriggeredNextRef = useRef(false);
+  const nextQuestionButtonRef = useRef(null);
   const router = useRouter();
   const { mutate: nextQuestion, isPending: isNextPending } = useMutation({
     mutationFn: () => NextQuestionAction(code),
@@ -74,18 +74,13 @@ export default function GameRunning({ code }: { code: string }) {
   }, [code]);
 
   useEffect(() => {
-    if (!gameSession) return;
-
-    hasTriggeredNextRef.current = false;
-  }, [gameSession?.currentQuestion.id]);
-
-  useEffect(() => {
-    if (gameSession?.timer.isTimeUp && !hasTriggeredNextRef.current) {
-      hasTriggeredNextRef.current = true;
+    if (gameSession?.timer.remainingTime === 0) {
       nextQuestion();
     }
-  }, [gameSession?.isQuizEnded]);
-  
+    if (gameSession?.isQuizEnded && gameSession?.timer.remainingTime === 0) {
+      changeGameStatus({ status: "FINISHED", code });
+    }
+  }, [gameSession?.timer.remainingTime, gameSession?.isQuizEnded]);
 
   if (gameSession) {
     return (
@@ -134,6 +129,7 @@ export default function GameRunning({ code }: { code: string }) {
 
               <button
                 type="button"
+                ref={nextQuestionButtonRef}
                 disabled={isNextPending}
                 onClick={() => nextQuestion()}
                 className="inline-flex cursor-pointer items-center gap-2 rounded-lg border border-neutral-200 bg-white px-4 py-2 text-sm font-medium text-neutral-800 transition-colors hover:bg-neutral-50 disabled:cursor-not-allowed disabled:opacity-70"

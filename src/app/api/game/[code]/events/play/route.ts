@@ -1,5 +1,5 @@
 import { prisma } from "@/lib/prisma_client";
-
+import { NextQuestionAction } from "@/lib/actions/next-question.action";
 export async function GET(
   request: Request,
   { params }: { params: Promise<{ code: string }> },
