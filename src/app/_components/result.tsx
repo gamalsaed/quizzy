@@ -82,7 +82,7 @@ export default function Result({ userId }: { userId: string }) {
           )}
 
           <h1 className="text-3xl col-span-3 text-center my-10 sm:text-4xl font-extrabold text-white drop-shadow-[0_0_18px_rgba(255,255,255,0.25)]">
-            الاجاتبات
+            الاجابات
           </h1>
           <ScrollArea className="h-96 col-span-3 text-navy w-full p-5 flex flex-col  rounded-2xl">
             {data &&

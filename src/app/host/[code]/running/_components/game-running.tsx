@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useMutation } from "@tanstack/react-query";
 import { NextQuestionAction } from "@/lib/actions/next-question.action";
 import { ChangeGameStatusAction } from "@/lib/actions/change-game-status";
@@ -11,8 +11,8 @@ import { QuestionCard } from "@/app/play/[code]/_components/question-card";
 import { Player } from "@/generated/prisma/client";
 import PlayersListCard from "./player-list";
 import Loading from "@/app/loading";
-import { Button } from "@base-ui/react/button";
-import { Square, SkipForward, SkipBack, Loader2 } from "lucide-react";
+import { Square, SkipForward, Loader2 } from "lucide-react";
+
 type data = {
   quiz: {
     id: string;
@@ -43,6 +43,7 @@ type data = {
 
 export default function GameRunning({ code }: { code: string }) {
   const [gameSession, setGameSession] = useState<data>();
+  const hasTriggeredNextRef = useRef(false);
   const router = useRouter();
   const { mutate: nextQuestion, isPending: isNextPending } = useMutation({
     mutationFn: () => NextQuestionAction(code),
@@ -73,14 +74,21 @@ export default function GameRunning({ code }: { code: string }) {
   }, [code]);
 
   useEffect(() => {
+    if (!gameSession) return;
+
+    hasTriggeredNextRef.current = false;
+  }, [gameSession?.currentQuestion.id]);
+
+  useEffect(() => {
     if (gameSession?.timer.isTimeUp) {
       nextQuestion();
     }
   }, [gameSession]);
 
   useEffect(() => {
-    if (gameSession?.isQuizEnded) {
-      changeGameStatus({ code, status: "FINISHED" });
+    if (gameSession?.timer.isTimeUp && !hasTriggeredNextRef.current) {
+      hasTriggeredNextRef.current = true;
+      nextQuestion();
     }
   }, [gameSession?.isQuizEnded]);
 
